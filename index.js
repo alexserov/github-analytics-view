@@ -105,7 +105,10 @@ $(() => {
         columns: [
             { dataField: 'repository' },
             { dataField: 'name' },
-            { dataField: 'date' },
+            {
+                dataField: 'date',
+                customizeText: (cell) => cell.value && new Date(cell.value).toLocaleDateString(),
+            },
             {
                 caption: 'URL',
                 cellTemplate: (container, options) => {
