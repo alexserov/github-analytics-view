@@ -1,0 +1,23 @@
+{
+  "name": "github-analytics-view",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexserov/github-analytics-view.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexserov/github-analytics-view/issues"
+  },
+  "homepage": "https://github.com/alexserov/github-analytics-view#readme",
+  "devDependencies": {
+    "http-server": "^13.0.0"
+  }
+}
