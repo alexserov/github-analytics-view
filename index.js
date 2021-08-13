@@ -1,11 +1,14 @@
 $(() => {
     let store = new DevExpress.data.CustomStore({
         load: async options => {
+            let url = 'https://serov-github-analytics.herokuapp.com/runs';
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+                url = 'http://localhost:3000/runs';
+
             return await new Promise(resolve => {
                 $.ajax({
                     type: 'GET',
-                    // url: 'https://serov-github-analytics.herokuapp.com/runs',
-                    url: 'http://localhost:3000/runs',
+                    url: url,
                     data: options,
                     success: response => resolve(response)
                 });
