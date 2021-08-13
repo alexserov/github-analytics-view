@@ -43,10 +43,9 @@ $(() => {
                 format: "shortDateShortTime"
             },
             onValueChanged: x => {
-                let source = DevExpress.ui.dxDataGrid.getInstance($('#dataGrid')).option('dataSource');
-                source.filter = x.value;
-                source.load();
-                source.reload();
+                var dataSource = $("#dataGrid").dxDataGrid("getDataSource");
+                dataSource.filter(x.value);
+                dataSource.load();
             }
         });
     });
@@ -60,5 +59,11 @@ $(() => {
             sorting: true,
             grouping: true
         },
+        columns: [
+            { dataField: 'name' },
+            { dataField: 'date' },
+            { dataField: 'duration' },
+            { dataField: 'pending' },
+        ]
     });
 });
