@@ -107,7 +107,7 @@ $(() => {
             { dataField: 'name' },
             {
                 dataField: 'date',
-                customizeText: (cell) => cell.value && new Date(cell.value).toLocaleDateString(),
+                customizeText: (cell) => cell.value && new Date(cell.value).toLocaleString(),
             },
             {
                 caption: 'URL',
