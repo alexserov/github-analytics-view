@@ -17,6 +17,9 @@ function createStore(endpoint) {
     });
 }
 $(() => {
+    let today = new Date();
+    today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
     const store = createStore('runs');
     $('#rangeSelector').dxRangeSelector({
         dataSource: new DevExpress.data.DataSource({
@@ -28,7 +31,19 @@ $(() => {
             height: 300,
         },
         title: 'Pending time/Run time',
+        behavior: {
+            manualRangeSelectionEnabled: true,
+        },
+        loadingIndicator: {
+            enabled: true,
+            font: {
+                weight: 900,
+            },
+        },
         chart: {
+            toolTip: {
+                enabled: true,
+            },
             commonSeriesSettings: {
                 type: 'steparea',
                 argumentField: 'date',
@@ -58,7 +73,22 @@ $(() => {
             store: createStore('dates'),
         }),
         title: 'Total action runs',
+        behavior: {
+            manualRangeSelectionEnabled: true,
+        },
+        loadingIndicator: {
+            enabled: true,
+            font: {
+                weight: 900,
+            },
+        },
         chart: {
+            valueAxis: {
+                valueType: 'numeric',
+            },
+            toolTip: {
+                enabled: true,
+            },
             commonSeriesSettings: {
                 type: 'steparea',
                 argumentField: 'date',
@@ -74,6 +104,7 @@ $(() => {
         sliderMarker: {
             format: 'shortDateShortTime',
         },
+        value: [today, new Date()],
         onValueChanged: (x) => {
             const dataSource = $('#rangeSelector').dxRangeSelector('getDataSource');
             dataSource.filter(x.value);
