@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 function createStore(endpoint) {
     return new DevExpress.data.CustomStore({
         load: (options) => {
@@ -15,6 +16,11 @@ function createStore(endpoint) {
             });
         },
     });
+}
+const fakeDuration = 2 * 60 * 60 * 1000 + 123;
+function avg(array) {
+    const sum = array.reduce((a, b) => a + b, 0);
+    return (sum / array.length) || 0;
 }
 $(() => {
     let today = new Date();
@@ -45,12 +51,30 @@ $(() => {
                 enabled: true,
             },
             commonSeriesSettings: {
-                type: 'steparea',
+                type: 'splinearea',
                 argumentField: 'date',
+                aggregation: {
+                    enabled: true,
+                    method: 'custom',
+                    calculate(aggregationInfo) {
+                        if (!aggregationInfo.data.length) {
+                            return {};
+                        }
+                        const duration = avg(aggregationInfo.data.map((item) => item.duration).filter((x) => x < fakeDuration));
+                        const pending = avg(aggregationInfo.data.map((item) => item.pending).filter((x) => x < fakeDuration));
+                        return { date: new Date((aggregationInfo.intervalStart.valueOf() + aggregationInfo.intervalEnd.valueOf()) / 2), duration, pending };
+                    },
+                },
             },
             series: [
-                { valueField: 'pending', color: 'red' },
-                { valueField: 'duration', color: 'green' },
+                {
+                    valueField: 'pending',
+                    color: 'red',
+                },
+                {
+                    valueField: 'duration',
+                    color: 'green',
+                },
             ],
         },
         scale: {
