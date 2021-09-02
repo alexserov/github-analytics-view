@@ -153,8 +153,8 @@ $(() => {
             const jobs = await loadData('jobs', { filter: range.value });
             const totalMinutes = jobs.length && jobs.map((x) => x.duration).reduce((a, b) => a + b, 0) / (60 * 1000);
             const totalPendingMinutes = jobs.length && jobs.map((x) => x.pending).reduce((a, b) => a + b, 0) / (60 * 1000);
-            $('#total-minutes').text(`${totalMinutes} (${totalMinutes / 60} hours)`);
-            $('#total-pending-minutes').text(`${totalPendingMinutes} (${totalPendingMinutes / 60} hours)`);
+            $('#total-minutes').text(`${Math.ceil(totalMinutes)} (${Math.ceil(totalMinutes / 60)} hours)`);
+            $('#total-pending-minutes').text(`${Math.ceil(totalPendingMinutes)} (${Math.ceil(totalPendingMinutes / 60)} hours)`);
 
             const concurrentJobs = await loadData('concurrentJobs', { filter: range.value });
             const maxConcurrentJobs = concurrentJobs.length && Math.max(...concurrentJobs.map((x) => x.length));
@@ -162,7 +162,7 @@ $(() => {
             const medianConcurrentJobs = concurrentJobs.length && concurrentJobs.sort((a, b) => a.length - b.length)[Math.min(concurrentJobs.length, Math.round(concurrentJobs.length / 2))].length;
 
             $('#max-concurrent-jobs').text(maxConcurrentJobs);
-            $('#average-concurrent-jobs').text(averageConcurrentJobs);
+            $('#average-concurrent-jobs').text(Math.ceil(averageConcurrentJobs));
             $('#median-concurrent-jobs').text(medianConcurrentJobs);
         },
     });
