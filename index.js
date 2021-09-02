@@ -153,8 +153,8 @@ $(() => {
             const jobs = await loadData('jobs', { filter: range.value });
             const totalMinutes = jobs.length && jobs.map((x) => x.duration).reduce((a, b) => a + b, 0) / (60 * 1000);
             const totalPendingMinutes = jobs.length && jobs.map((x) => x.pending).reduce((a, b) => a + b, 0) / (60 * 1000);
-            $('#total-minutes').text(totalMinutes);
-            $('#total-pending-minutes').text(totalPendingMinutes);
+            $('#total-minutes').text(`${totalMinutes} (${totalMinutes / 60} hours)`);
+            $('#total-pending-minutes').text(`${totalPendingMinutes} (${totalPendingMinutes / 60} hours)`);
 
             const concurrentJobs = await loadData('concurrentJobs', { filter: range.value });
             const maxConcurrentJobs = concurrentJobs.length && Math.max(...concurrentJobs.map((x) => x.length));
