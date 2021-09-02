@@ -27,15 +27,62 @@ $(() => {
     today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     const store = createStore('runs');
+    $('#rangeSelectorDates').dxRangeSelector({
+        dataSource: new DevExpress.data.DataSource({
+            paginate: false,
+            store: createStore('dates'),
+        }),
+        title: 'Total action runs',
+        behavior: {
+            manualRangeSelectionEnabled: true,
+        },
+        loadingIndicator: {
+            enabled: true,
+            font: {
+                weight: 900,
+            },
+        },
+        chart: {
+            valueAxis: {
+                valueType: 'numeric',
+            },
+            toolTip: {
+                enabled: true,
+            },
+            commonSeriesSettings: {
+                type: 'steparea',
+                argumentField: 'date',
+            },
+            series: [
+                { valueField: 'count', color: 'red' },
+            ],
+        },
+        scale: {
+            tickInterval: 'hour',
+            valueType: 'datetime',
+        },
+        sliderMarker: {
+            format: 'shortDateShortTime',
+        },
+        value: [today, new Date()],
+        onValueChanged: (x) => {
+            const dataSource = $('#rangeSelector').dxRangeSelector('getDataSource');
+            dataSource.filter(x.value);
+            dataSource.load();
+        },
+    });
     $('#rangeSelector').dxRangeSelector({
         dataSource: new DevExpress.data.DataSource({
             paginate: false,
             store,
             filter: 'skip',
+            map: (x) => {
+                x.date = new Date(x.date);
+                x.pending /= (60 * 1000);
+                x.duration /= (60 * 1000);
+                return x;
+            },
         }),
-        size: {
-            height: 300,
-        },
         title: 'Pending time/Run time',
         behavior: {
             manualRangeSelectionEnabled: true,
@@ -89,51 +136,74 @@ $(() => {
             const dataSource = $('#dataGrid').dxDataGrid('getDataSource');
             dataSource.filter(x.value);
             dataSource.load();
+            const durationPendingChart = $('#durationPendingChart').dxChart('instance');
+            durationPendingChart.getArgumentAxis().visualRange({ startValue: x.value[0], endValue: x.value[1] });
+            const concurrentJobsChart = $('#concurrentJobsChart').dxChart('instance');
+            concurrentJobsChart.getArgumentAxis().visualRange({ startValue: x.value[0], endValue: x.value[1] });
         },
     });
-    $('#rangeSelectorDates').dxRangeSelector({
-        dataSource: new DevExpress.data.DataSource({
-            paginate: false,
-            store: createStore('dates'),
-        }),
-        title: 'Total action runs',
-        behavior: {
-            manualRangeSelectionEnabled: true,
-        },
+    $('#durationPendingChart').dxChart({
+        dataSource: $('#rangeSelector').dxRangeSelector('getDataSource'),
         loadingIndicator: {
             enabled: true,
             font: {
                 weight: 900,
             },
         },
-        chart: {
-            valueAxis: {
-                valueType: 'numeric',
+        valueAxis: {
+            valueType: 'numeric',
+        },
+        toolTip: {
+            enabled: true,
+        },
+        commonSeriesSettings: {
+            type: 'steparea',
+            argumentField: 'date',
+        },
+        argumentAxis: {
+            argumentType: 'datetime',
+        },
+        series: [
+            {
+                valueField: 'pending',
+                color: 'red',
             },
-            toolTip: {
-                enabled: true,
+            {
+                valueField: 'duration',
+                color: 'green',
             },
-            commonSeriesSettings: {
-                type: 'steparea',
-                argumentField: 'date',
+        ],
+    });
+    $('#concurrentJobsChart').dxChart({
+        dataSource: new DevExpress.data.DataSource({
+            paginate: false,
+            store: createStore('concurrentJobs'),
+        }),
+        loadingIndicator: {
+            enabled: true,
+            font: {
+                weight: 900,
             },
-            series: [
-                { valueField: 'count', color: 'red' },
-            ],
         },
-        scale: {
-            tickInterval: 'hour',
-            valueType: 'datetime',
+        valueAxis: {
+            valueType: 'numeric',
         },
-        sliderMarker: {
-            format: 'shortDateShortTime',
+        toolTip: {
+            enabled: true,
         },
-        value: [today, new Date()],
-        onValueChanged: (x) => {
-            const dataSource = $('#rangeSelector').dxRangeSelector('getDataSource');
-            dataSource.filter(x.value);
-            dataSource.load();
+        commonSeriesSettings: {
+            type: 'steparea',
+            argumentField: 'date',
         },
+        argumentAxis: {
+            argumentType: 'datetime',
+        },
+        series: [
+            {
+                valueField: 'length',
+                color: 'red',
+            },
+        ],
     });
     const formatMiliseconds = (cell) => {
         if (cell.value) {
