@@ -1,20 +1,22 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
+function loadData(endpoint, options) {
+    let url = `https://serov-github-analytics.herokuapp.com/${endpoint}`;
+    // eslint-disable-next-line no-restricted-globals
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { url = `http://localhost:3000/${endpoint}`; }
+
+    return new Promise((resolve) => {
+        $.ajax({
+            type: 'GET',
+            url,
+            data: options,
+            success: (response) => resolve(response),
+        });
+    });
+}
 function createStore(endpoint) {
     return new DevExpress.data.CustomStore({
-        load: (options) => {
-            let url = `https://serov-github-analytics.herokuapp.com/${endpoint}`;
-            // eslint-disable-next-line no-restricted-globals
-            if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { url = `http://localhost:3000/${endpoint}`; }
-
-            return new Promise((resolve) => {
-                $.ajax({
-                    type: 'GET',
-                    url,
-                    data: options,
-                    success: (response) => resolve(response),
-                });
-            });
-        },
+        load: (options) => loadData(endpoint, options),
     });
 }
 const fakeDuration = 2 * 60 * 60 * 1000 + 123;
@@ -132,14 +134,36 @@ $(() => {
         sliderMarker: {
             format: 'shortDateShortTime',
         },
-        onValueChanged: (x) => {
+        onValueChanged: async (range) => {
             const dataSource = $('#dataGrid').dxDataGrid('getDataSource');
-            dataSource.filter(x.value);
+            dataSource.filter(range.value);
             dataSource.load();
+
             const durationPendingChart = $('#durationPendingChart').dxChart('instance');
-            durationPendingChart.getArgumentAxis().visualRange({ startValue: x.value[0], endValue: x.value[1] });
+            durationPendingChart.getArgumentAxis().visualRange({ startValue: range.value[0], endValue: range.value[1] });
             const concurrentJobsChart = $('#concurrentJobsChart').dxChart('instance');
-            concurrentJobsChart.getArgumentAxis().visualRange({ startValue: x.value[0], endValue: x.value[1] });
+            concurrentJobsChart.getArgumentAxis().visualRange({ startValue: range.value[0], endValue: range.value[1] });
+
+            $('#total-minutes').text('loading...');
+            $('#total-pending-minutes').text('loading...');
+            $('#max-concurrent-jobs').text('loading...');
+            $('#average-concurrent-jobs').text('loading...');
+            $('#median-concurrent-jobs').text('loading...');
+
+            const jobs = await loadData('jobs', { filter: range.value });
+            const totalMinutes = jobs.length && jobs.map((x) => x.duration).reduce((a, b) => a + b, 0) / (60 * 1000);
+            const totalPendingMinutes = jobs.length && jobs.map((x) => x.pending).reduce((a, b) => a + b, 0) / (60 * 1000);
+            $('#total-minutes').text(totalMinutes);
+            $('#total-pending-minutes').text(totalPendingMinutes);
+
+            const concurrentJobs = await loadData('concurrentJobs', { filter: range.value });
+            const maxConcurrentJobs = concurrentJobs.length && Math.max(...concurrentJobs.map((x) => x.length));
+            const averageConcurrentJobs = concurrentJobs.length && concurrentJobs.map((x) => x.length).reduce((a, b) => a + b, 0) / concurrentJobs.length;
+            const medianConcurrentJobs = concurrentJobs.length && concurrentJobs.sort((a, b) => a.length - b.length)[Math.min(concurrentJobs.length, Math.round(concurrentJobs.length / 2))].length;
+
+            $('#max-concurrent-jobs').text(maxConcurrentJobs);
+            $('#average-concurrent-jobs').text(averageConcurrentJobs);
+            $('#median-concurrent-jobs').text(medianConcurrentJobs);
         },
     });
     $('#durationPendingChart').dxChart({
@@ -204,6 +228,15 @@ $(() => {
                 color: 'red',
             },
         ],
+        onPointHoverChanged(e) {
+            const point = e.target;
+            if (!point.isHovered()) {
+                point.hideTooltip();
+            } else {
+                point.showToolTip();
+            }
+        },
+
     });
     const formatMiliseconds = (cell) => {
         if (cell.value) {
